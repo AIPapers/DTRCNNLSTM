@@ -4,7 +4,7 @@ import skimage.measure as m
 import skvideo.io as skv
 
 
-def readImages(ims, thresholdParam=0.9):
+def readImages(ims, thresholdParam=0.95):
     images = skv.vread(ims)
     count = 0
     temp = images[0]

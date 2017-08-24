@@ -22,26 +22,23 @@ def preProcessData():
 
     for i in range(len(dirlist)):
         vids = []
+        nums = 0
         print(root + dirlist[i] + "/*.avi")
         labels.append(int(dirlist[i][dirlist[i].find("_") + 1:]))
         for vid in glob.glob(root + dirlist[i] + '/*.avi'):
             vids.append(vid)
-        print(vids)
 
         numberOfVideos.append(len(vids))
         for i in range(len(vids)):
-            dfImageXY, dfImageXZ, dfImageYZ, maxL = prepare.getImages(vids[i])
-            tempXY = [x for x in dfImageXY]
-            tempXZ = [x for x in dfImageXZ]
-            tempYZ = [x for x in dfImageYZ]
-            dfImages.append(tempXY)
-            dfImages.append(tempXZ)
-            dfImages.append(tempYZ)
+            dfImage, maxL, num = prepare.getImages(vids[i])
+            for x in dfImage:
+                dfImages.append(x)
+            nums += num
             maxSeqLength = max(maxSeqLength, maxL)
-        totalLabelNumbers.append(len(vids) * 3)
+        totalLabelNumbers.append(nums)
 
     dfImages = np.array(dfImages)
-    targetValues = np.zeros(sum(numberOfVideos) * 3)
+    targetValues = np.zeros(sum(totalLabelNumbers))
 
     count = 0
     for i in range(len(labels)):
