@@ -9,7 +9,7 @@ import prepareNumpyArray as prepare
 
 
 def preProcessData():
-    root = '/home/striker/PycharmProjects/DTRCNN/data/videoFiles/'
+    root = '/home/striker/PycharmProjects/DTRCNNLSTM/video_files/'
     dirlist = [item for item in os.listdir(root) if os.path.isdir(os.path.join(root, item))]
 
     print(dirlist)
@@ -22,12 +22,12 @@ def preProcessData():
 
     for i in range(len(dirlist)):
         vids = []
-        nums = 0
         print(root + dirlist[i] + "/*.avi")
         labels.append(int(dirlist[i][dirlist[i].find("_") + 1:]))
         for vid in glob.glob(root + dirlist[i] + '/*.avi'):
             vids.append(vid)
         print(vids)
+
         numberOfVideos.append(len(vids))
         for i in range(len(vids)):
             dfImageXY, dfImageXZ, dfImageYZ, maxL = prepare.getImages(vids[i])
