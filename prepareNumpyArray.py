@@ -42,4 +42,4 @@ def getImages(ims):
         hsimage = (image[:, :, i])
         dfImage.append(resizeImage(hsimage))
 
-    return (dfImage), max(x, y, z), (x + y + z)
+    return dfImage, max(x, y, z), (x + y + z)

@@ -1,6 +1,5 @@
 import preprocessData as preprocess
-
-'''from keras.layers import LSTM, Dense
+from keras.layers import LSTM, Dense
 from keras.layers.convolutional import Conv1D, MaxPooling1D
 from keras.models import Sequential
 
@@ -21,11 +20,10 @@ def buildModel(input_shape):
 
 
 print("Loading Data")
-xTrain, yTrain, xTest, yTest = '''
-preprocess.preProcessData()
+xTrain, yTrain, xTest, yTest = preprocess.preProcessData()
 
-'''model = buildModel((None, 74))
+model = buildModel((None, 74))
 model.fit(xTrain, yTrain, epochs=100, batch_size=64)
 
 scores = model.evaluate(xTest, yTest, verbose=0)
-print("Accuracy: %.2f%%" % (scores[1] * 100))'''
+print("Accuracy: %.2f%%" % (scores[1] * 100))

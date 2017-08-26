@@ -1,7 +1,7 @@
 import glob
 import os
-import pandas as pd
 import numpy as np
+from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
 import prepareNumpyArray as prepare
@@ -31,7 +31,7 @@ def preProcessData():
         for i in range(len(vids)):
             dfImage, maxL, num = prepare.getImages(vids[i])
             for x in dfImage:
-                dfImages.append(x)
+                dfImages.append(np.array(x))
             nums += num
             maxSeqLength = max(maxSeqLength, maxL)
         totalLabelNumbers.append(nums)
@@ -44,21 +44,18 @@ def preProcessData():
         targetValues[count:count + totalLabelNumbers[i]] = labels[i]
         count += totalLabelNumbers[i]
 
-    print(len(dfImages[0, 0, :]), len(targetValues))
+    print(len(dfImages), len(targetValues))
     print(dfImages[0].shape, dfImages.shape)
 
-    dfFinal = pd.DataFrame({'images': dfImages, 'label': targetValues})
+    dfImagesFlat = np.array([dfImages[:, :, i] for i in range(len(dfImages[0, 0, :]))])
+    targetValues = np.array(targetValues)
+    print(dfImagesFlat.shape, targetValues.shape)
 
-    print(dfFinal.head())
+    x_train, x_test, y_train, y_test = train_test_split(dfImagesFlat, targetValues)
 
-    df_train, df_test = train_test_split(dfFinal)
-
-    '''x_train = np.array(df_train[0])
-    y_train = np.array(df_train[1])
-    x_test = np.array(df_test[0])
-    y_test = np.array(df_test[1])
+    print(x_test[0:2], y_test[0:2])
 
     # print(x_test.head(), y_test.head())
     print(len(x_test), len(x_train), maxSeqLength)
 
-    return x_train, y_train, x_test, y_test'''
+    return x_train, y_train, x_test, y_test
