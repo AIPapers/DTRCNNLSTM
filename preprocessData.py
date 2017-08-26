@@ -1,8 +1,10 @@
 import glob
 import os
+
 import numpy as np
-from sklearn.utils import shuffle
+from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
+from matplotlib import pyplot
 
 import prepareNumpyArray as prepare
 
@@ -47,13 +49,27 @@ def preProcessData():
     print(len(dfImages), len(targetValues))
     print(dfImages[0].shape, dfImages.shape)
 
+
     dfImagesFlat = np.array([dfImages[:, :, i] for i in range(len(dfImages[0, 0, :]))])
     targetValues = np.array(targetValues)
     print(dfImagesFlat.shape, targetValues.shape)
+    pyplot.imshow(dfImagesFlat[0])
 
     x_train, x_test, y_train, y_test = train_test_split(dfImagesFlat, targetValues)
+    x_train = np.array(x_train)
+    x_test = np.array(x_test)
+    y_train = np.array(y_train)
+    y_test = np.array(y_test)
 
-    print(x_test[0:2], y_test[0:2])
+    x_train = x_train.reshape(x_train.shape[0], 1, 74, 74)
+    x_train /= 255
+    x_test = x_test.reshape(x_test.shape[0], 1, 74, 74)
+    x_test /= 255
+
+    y_train = np_utils.to_categorical(y_train)
+    y_test = np_utils.to_categorical(y_test)
+
+    print(x_test.shape, y_test.shape)
 
     # print(x_test.head(), y_test.head())
     print(len(x_test), len(x_train), maxSeqLength)
