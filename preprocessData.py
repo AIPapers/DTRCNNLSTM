@@ -4,7 +4,6 @@ import os
 import numpy as np
 from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
-from matplotlib import pyplot
 
 import prepareNumpyArray as prepare
 
@@ -53,7 +52,6 @@ def preProcessData():
     dfImagesFlat = np.array([dfImages[:, :, i] for i in range(len(dfImages[0, 0, :]))])
     targetValues = np.array(targetValues)
     print(dfImagesFlat.shape, targetValues.shape)
-    pyplot.imshow(dfImagesFlat[0])
 
     x_train, x_test, y_train, y_test = train_test_split(dfImagesFlat, targetValues)
     x_train = np.array(x_train)
