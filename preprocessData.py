@@ -1,8 +1,7 @@
 import glob
 import os
-
-import numpy as np
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 
 import prepareNumpyArray as prepare
@@ -37,7 +36,7 @@ def preProcessData():
             maxSeqLength = max(maxSeqLength, maxL)
         totalLabelNumbers.append(nums)
 
-    dfImages = np.array(dfImages)
+    dfImages = np.dstack(dfImages)
     targetValues = np.zeros(sum(totalLabelNumbers))
 
     count = 0
@@ -45,18 +44,21 @@ def preProcessData():
         targetValues[count:count + totalLabelNumbers[i]] = labels[i]
         count += totalLabelNumbers[i]
 
-    print(len(dfImages), len(targetValues))
+    print(len(dfImages[0, 0, :]), len(targetValues))
+    print(dfImages[0].shape, dfImages.shape)
 
-    dfFinal = pd.DataFrame({'image': dfImages, 'label': targetValues})
-    print(dfFinal.iloc[[35]])
+    dfFinal = pd.DataFrame({'images': dfImages, 'label': targetValues})
+
+    print(dfFinal.head())
 
     df_train, df_test = train_test_split(dfFinal)
-    x_train = pd.DataFrame(df_train['image'])
-    y_train = pd.DataFrame(df_train['label'])
-    x_test = pd.DataFrame(df_test['image'])
-    y_test = pd.DataFrame(df_test['label'])
+
+    '''x_train = np.array(df_train[0])
+    y_train = np.array(df_train[1])
+    x_test = np.array(df_test[0])
+    y_test = np.array(df_test[1])
 
     # print(x_test.head(), y_test.head())
-    print(len(x_test), len(x_train), len(x_test.iloc[[1]]), maxSeqLength)
+    print(len(x_test), len(x_train), maxSeqLength)
 
-    return x_train, y_train, x_test, y_test
+    return x_train, y_train, x_test, y_test'''
