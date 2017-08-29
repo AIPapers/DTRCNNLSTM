@@ -28,4 +28,5 @@ def readImages(ims, thresholdParam=0.95):
             count += 1
 
     finalImages = finalImages[:count]
+    del images, temp, d
     return finalImages, count
