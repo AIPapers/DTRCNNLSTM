@@ -81,13 +81,16 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob, name='Drop4')
 W_fc2 = weight_variable([1024, 10], name='W5')
 b_fc2 = bias_variable([10], name='B5')
 
-y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2, name='Ypredict')
+y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
 y_ = tf.placeholder(tf.float32, [None, 10], name='Ytruth')
 
-cross_entropy = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y_conv, 1e-10, 1.0)), name='CrossEntropy')
+# cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y_conv, 1e-10, 1.0)), name='CrossEntropy'))
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv)
+loss = tf.reduce_mean(cross_entropy)
+tf.summary.scalar('loss', loss)
 
-train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
 
 correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1), name='CorrectPrediction')
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"), name='Accuracy')
@@ -105,48 +108,73 @@ print(xTrain.shape, np.expand_dims(xTrain[0], axis=0).shape, yTrain.shape)
 
 N = xTrain.shape[0]
 
-do_training = False
+do_training = True
 
 if do_training:
     sess.run(tf.global_variables_initializer())
 
-    totalAccuracy = [0]
+    totalAccuracy = []
+    totalTrainAccuracy = []
+    lossTotal = []
 
-    num_epochs = 10
+    num_epochs = 20
     for j in range(num_epochs):
 
         print("Shuffling training data")
         xTrain, yTrain = shuffle(xTrain, yTrain, random_state=0)
+        accuracyBatch = []
+        lossBatch = []
 
         for i in range(0, N - 5 * 17, 5 * 17):
             if i % (20 * 17) == 0:
                 print("Training %d step" % i)
-            sess.run(train_step, feed_dict={x: xTrain[i:i + 5 * 17], y_: yTrain[i:i + 5 * 17], keep_prob: 0.5})
+            train, lossVal, accuracyTrain = sess.run([train_step, loss, accuracy],
+                                                     feed_dict={x: xTrain[i:i + 5 * 17], y_: yTrain[i:i + 5 * 17],
+                                                                keep_prob: 0.5})
+            lossBatch.append(lossVal)
+            accuracyBatch.append(100 * accuracyTrain)
 
-        print("Finished training - %d." % (j + 1))
-        ti = time.strftime("ISOTIMEFORMAT", time.localtime())
+        lossTotal.append(np.average(lossBatch))
+        totalTrainAccuracy.append(np.average(accuracyBatch))
+        print("Finished training - %d, with accuracy %g." % ((j + 1), np.average(accuracyBatch)))
+        ti = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         print('time:%s\n' % ti)
+        print("Average Loss for epoch - %d - %g" % ((j + 1), np.average(lossBatch)))
 
         acc = []
         for i in range(0, xTest.shape[0], 1000):
-            acc.append(accuracy.eval(feed_dict={x: xTest[i:i + 1000], y_: yTest[i:i + 1000], keep_prob: 1.0}))
+            acc.append(100 * accuracy.eval(feed_dict={x: xTest[i:i + 1000], y_: yTest[i:i + 1000], keep_prob: 1.0}))
 
         print("Epoch - %d, Accuracy: %g\n" % (j + 1, np.average(acc)))
         totalAccuracy.append(np.average(acc))
         del acc
 
     del xTrain, yTrain, xTest, yTest
-    save_path = saver.save(sess, "saved_models/model_%d_lstm_2.ckpt" % N)
+    save_path = saver.save(sess, "saved_models/model_%d_lstm.ckpt" % N)
     print("Model saved in file: ", save_path)
+
+    xData = [i for i in range(1, num_epochs + 1)]
+    xDataLoss = [i for i in range(1, len(lossTotal) + 1)]
+
     print(totalAccuracy)
-    xData = [i for i in range(0, num_epochs + 1)]
+    print(totalTrainAccuracy)
+    print(lossTotal)
+    plt.plot(xData, totalTrainAccuracy)
     plt.plot(xData, totalAccuracy)
-    plt.savefig("saved_models/model_%d_lstm_2_accuracyPlot.png" % N)
+    plt.savefig("saved_models/model_%d_lstm_accuracyTrainTestPlot.png" % N)
+
+    plt.savefig("saved_models/model_%d_lstm_accuracyPlot.png" % N)
+
+    lossPlot = plt.figure(2)
+    plt.plot(xDataLoss, lossTotal)
+    plt.savefig("saved_models/model_%d_lstm_lossPlot.png" % N)
+
     plt.show()
+    print("Minimized loss = %g" % (lossTotal[len(lossTotal) - 1]))
 
 else:
 
-    model_name = "saved_models/model_%d_lstm_2.ckpt" % N
+    model_name = "saved_models/model_%d_lstm.ckpt" % N
     print("Loading model '%s'" % model_name)
     saver.restore(sess, model_name)
     print("Model restored.")
